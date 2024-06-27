@@ -15,51 +15,92 @@ import hypertekst.Hyperlink;
 import hypertekst.Tekstelement;
 
 class HypertekstTest {
+	
+	Document document = new Document();
+	Tekstelement leesDe = new Tekstelement("Lees de ");
+	Hyperlink documentatieLink = new Hyperlink("Documentatie");
+	
+	Tekstelement leesDe2 = new Tekstelement("Lees de ");
+	Tekstelement zieDe = new Tekstelement("Zie de ");
+	Hyperlink documentatieLink2 = new Hyperlink("Documentatie");
+	Hyperlink docs = new Hyperlink("Docs");
 
 	@Test
-	void test() {
-		Document document = new Document();
+	void testDocumentConstructor() {
 		assertEquals(List.of(), document.getElementen());
-		
-		Tekstelement leesDe = new Tekstelement("Lees de ");
+	}
+	
+	@Test
+	void testTekstelementConstructor() {
 		assertNull(leesDe.getDocument());
 		assertEquals("Lees de ", leesDe.getTekstinhoud());
 		assertEquals(Set.of(), leesDe.getReferrers());
-		
-		Hyperlink documentatieLink = new Hyperlink("Documentatie");
+	}
+	
+	@Test
+	void testHyperlinkConstructor() {
 		assertNull(documentatieLink.getDocument());
 		assertEquals("Documentatie", documentatieLink.getTekstinhoud());
 		assertEquals(Set.of(), documentatieLink.getReferrers());
-		
+	}
+	
+	@Test
+	void testSetDoelelement() {
 		documentatieLink.setDoelelement(leesDe);
 		assertSame(leesDe, documentatieLink.getDoelelement());
 		assertEquals(Set.of(documentatieLink), leesDe.getReferrers());
-		
+	}
+	
+	@Test
+	void testClearDoelelement() {
+		documentatieLink.setDoelelement(leesDe);
+		documentatieLink.clearDoelelement();
+		assertNull(documentatieLink.getDoelelement());
+		assertEquals(Set.of(), leesDe.getReferrers());
+	}
+	
+	@Test
+	void testAddElement() {
 		document.addElement(leesDe);
 		document.addElement(documentatieLink);
 		assertEquals(List.of(leesDe, documentatieLink), document.getElementen());
 		assertSame(document, leesDe.getDocument());
-		
-		documentatieLink.clearDoelelement();
-		assertNull(documentatieLink.getDoelelement());
-		assertEquals(Set.of(), leesDe.getReferrers());
-		
+	}
+	
+	@Test
+	void testVerwijderUitDocument() {
+		document.addElement(leesDe);
+		document.addElement(documentatieLink);
 		documentatieLink.verwijderUitDocument();
 		assertNull(documentatieLink.getDocument());
 		assertEquals(List.of(leesDe), document.getElementen());
-		
+	}
+	
+	@Test
+	void testContentEquals() {
 		Tekstelement leesDe2 = new Tekstelement("Lees de ");
 		Tekstelement zieDe = new Tekstelement("Zie de ");
 		assertTrue(leesDe.contentEquals(leesDe2));
 		assertFalse(leesDe.contentEquals(zieDe));
 		assertFalse(leesDe.contentEquals(documentatieLink));
-		
+
 		Hyperlink documentatieLink2 = new Hyperlink("Documentatie");
 		Hyperlink docs = new Hyperlink("Docs");
 		assertTrue(documentatieLink.contentEquals(documentatieLink2));
 		assertFalse(documentatieLink.contentEquals(docs));
 		assertFalse(documentatieLink.contentEquals(leesDe));
 		
+		documentatieLink2.setDoelelement(zieDe);
+		assertFalse(documentatieLink.contentEquals(documentatieLink2));
+		documentatieLink.setDoelelement(leesDe2);
+		assertFalse(documentatieLink.contentEquals(documentatieLink2));
+		documentatieLink.clearDoelelement();
+		documentatieLink.setDoelelement(zieDe);
+		assertTrue(documentatieLink.contentEquals(documentatieLink2));
+	}
+	
+	@Test
+	void testGetTekstueleVoorstelling() {
 		char[] groteBuffer = new char[10];
 		assertEquals(7, zieDe.getTekstueleVoorstelling(groteBuffer));
 		assertArrayEquals("Zie de \0\0\0".toCharArray(), groteBuffer);
@@ -74,7 +115,11 @@ class HypertekstTest {
 		
 		assertEquals(6, docs.getTekstueleVoorstelling(kleineBuffer));
 		assertArrayEquals(kleineBufferClone, kleineBuffer);
-		
+	}
+	
+	@Test
+	void testGetEvenElementenIterator() {
+		document.addElement(leesDe);
 		document.addElement(documentatieLink);
 		document.addElement(zieDe);
 		document.addElement(docs);
@@ -84,13 +129,32 @@ class HypertekstTest {
 		for (Iterator<Element> i = document.getEvenElementenIterator(); i.hasNext(); )
 			evenElementen.add(i.next());
 		assertEquals(List.of(leesDe, zieDe, documentatieLink2), evenElementen);
+	}
+	
+	@Test
+	void testForEachHyperlink() {
+		document.addElement(leesDe);
+		document.addElement(documentatieLink);
+		document.addElement(zieDe);
+		document.addElement(docs);
+		document.addElement(documentatieLink2);
 		
 		ArrayList<Hyperlink> hyperlinks = new ArrayList<>();
 		document.forEachHyperlink(h -> hyperlinks.add(h));
 		assertEquals(List.of(documentatieLink, docs, documentatieLink2), hyperlinks);
+	}
+	
+	@Test
+	void testGetDoelelementenStream() {
+		document.addElement(leesDe);
+		document.addElement(documentatieLink);
+		document.addElement(zieDe);
+		document.addElement(docs);
+		document.addElement(documentatieLink2);
 		
 		docs.setDoelelement(zieDe);
 		documentatieLink2.setDoelelement(docs);
+		
 		assertEquals(List.of(zieDe, docs), document.getDoelelementenStream().toList());
 	}
 

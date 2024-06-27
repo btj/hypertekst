@@ -70,7 +70,7 @@ public abstract class Element {
 	
 	/*
 	 * Gedragssubtypering betekent dat de specificatie van een overschrijvende methode strenger moet zijn
-	 * dan van de specificatie van de overschreven methode (of equivalent).
+	 * dan de specificatie van de overschreven methode (of equivalent).
 	 * Dit is het geval als de preconditie van de overschrijvende methode
 	 * zwakker is (of equivalent), en de postconditie strenger (of equivalent).
 	 */
